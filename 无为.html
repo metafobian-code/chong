@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>无为</title>
+<style>
+  :root { color-scheme: dark; box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  html, body { margin: 0; background: #000; color: #fff; }
+  body { font-family: Georgia, "Times New Roman", serif; }
+  .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 38%); min-height: 100vh; }
+  .poem { padding: 6vh 5vw; max-width: 40rem; }
+  h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); letter-spacing: .15em; margin: 0 0 1.2rem; opacity: 0; animation: in .6s forwards; }
+  .h { color: #ff1f1f; text-shadow: 0 0 8px rgba(255, 31, 31, .7); }
+  .line { font-size: clamp(.85rem, 1.9vw, 1.2rem); line-height: 1.6; min-height: 1.6em; opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+  .line.show { opacity: 1; transform: none; }
+  .line.gap { min-height: 1.2em; }
+  .rain { position: sticky; top: 0; height: 100vh; border-left: 1px solid #222; }
+  canvas { display: block; width: 100%; height: 100%; }
+  @keyframes in { to { opacity: 1; } }
+  @media (max-width: 640px) {
+    .wrap { grid-template-columns: 1fr; }
+    .rain { order: -1; position: relative; height: 28vh; border-left: 0; border-bottom: 1px solid #222; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="poem" id="poem"></div>
+  <div class="rain"><canvas id="c" aria-hidden="true"></canvas></div>
+</div>
+<script>
+  var lines = [
+    "La realidad no está desnuda.",
+    "",
+    "Está vestida de lenguaje,",
+    "de nombres, de metáforas,",
+    "mediciones y abstracciones.",
+    "",
+    "Ella me gritó: Wúwéi (无为).",
+    "",
+    "Y en ese retrato sublime, gigante tecnológico",
+    "caí prisionera del arte vivo del Biàn (变).",
+    "",
+    "El cielo me mostró las grúas danzando",
+    "sobre el río Huáng (黄)",
+    "y los reflejos que se pliegan en Pǔ (浦)",
+    "como papel de arroz en llamas.",
+    "",
+    "Las luces de neón son mi dios.",
+    "",
+    "Veo en el horizonte",
+    "el silicio soñando en mandarín,",
+    "el cristal parpadeando en binario.",
+    "",
+    "Y yo,",
+    "en mi vestimenta de Lǎo (老),",
+    "apenas sabiendo ser Wéi (为),",
+    "",
+    "pronuncié el primer tono",
+    "y caí en el susurro del neutro,",
+    "de la indestructible Cháng (长)",
+    "construida sobre el Chéng (城)",
+    "infinito.",
+    "",
+    "Así entendí que ella y yo",
+    "somos el mismo verbo",
+    "en distintos tonos."
+  ];
+  var poem = document.getElementById("poem");
+  poem.innerHTML = '<h1><span class="h">无为</span></h1>';
+  var t = 400;
+  lines.forEach(function (txt) {
+    var d = document.createElement("div");
+    d.className = "line" + (txt ? "" : " gap");
+    d.innerHTML = txt.replace(/[\u4e00-\u9fff]+/g, function (m) { return '<span class="h">' + m + '</span>'; });
+    poem.appendChild(d);
+    t += txt ? 550 : 250;
+    setTimeout(function () { d.classList.add("show"); }, t);
+  });
+
+  // Lluvia: ASCII blanco y hanzis rojos
+  var cv = document.getElementById("c"), ctx = cv.getContext("2d");
+  var hanzi = "无为变黄浦老长城道天地人水火风云光夜梦";
+  var ascii = "01abcdefghijklmnopqrstuvwxyz<>/\\|+=*#%&";
+  var cell = 18, cols = 0, drops = [], W = 0, H = 0;
+  function resize() {
+    var r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    W = r.width; H = r.height;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    cols = Math.floor(W / cell);
+    drops = [];
+    for (var i = 0; i < cols; i++) drops.push(Math.random() * -H / cell);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+  setInterval(function () {
+    ctx.fillStyle = "rgba(0,0,0,.14)";
+    ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+    for (var i = 0; i < cols; i++) {
+      var red = Math.random() < 0.4, ch;
+      if (red) {
+        ch = hanzi.charAt(Math.floor(Math.random() * hanzi.length));
+        ctx.font = "16px 'Noto Sans CJK SC','PingFang SC','Microsoft YaHei',monospace";
+        ctx.fillStyle = "#ff1f1f"; ctx.shadowColor = "#ff1f1f"; ctx.shadowBlur = 8;
+      } else {
+        ch = ascii.charAt(Math.floor(Math.random() * ascii.length));
+        ctx.font = "14px monospace";
+        ctx.fillStyle = "#fff"; ctx.shadowBlur = 0;
+      }
+      ctx.fillText(ch, i * cell + 1, drops[i] * cell);
+      if (drops[i] * cell > H && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+    ctx.shadowBlur = 0;
+  }, 55);
+</script>
+</body>
+</html>
